@@ -12,6 +12,7 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 // Constants
+//niggers
 const int WIN = 10;
 //const int SIZE = 500;
 const int HALF = 250;
