@@ -5,33 +5,18 @@
 #include <list>
 #include <vector>
 
-#include "Shape.hpp"
-
-#include "Cube.hpp"
-#include "Light.hpp"
-#include "Bezier.hpp"
-
 
 class World {
 
 public:
-	//Shape* list[2];
-	// std::list<Shape*> ObjectList;
-	// std::vector<Shape*>* ObjectVector;
 
-	Light* myLight;
-
-	Bezier* myBezier;
-
+	Shape* list[2];
 	World();
 
 	~World();
 
-	void clean();
-
-	void reSet();
-
-	void draw_world();
+	void draw_world(); // draw all objects in the world
+	void draw_bezier(); // draw 2d world
 };
 
 #endif
