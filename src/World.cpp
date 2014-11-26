@@ -6,7 +6,6 @@
 
 World::World() {
 	list[0] = new Sphere();
-
 }
 
 World::~World(){

@@ -4,7 +4,8 @@
 #include <iostream>
 #include <list>
 #include <vector>
-
+#include "Shape.hpp"
+#include "Sphere.hpp"
 
 class World {
 
@@ -16,7 +17,7 @@ public:
 	~World();
 
 	void draw_world(); // draw all objects in the world
-	void draw_bezier(); // draw 2d world
+
 };
 
 #endif
