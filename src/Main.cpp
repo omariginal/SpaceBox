@@ -14,7 +14,7 @@
 #include "Camera.hpp"
 #include "World.hpp"
 
-GLint winWidth = 800, winHeight = 800;
+GLint winWidth = 550, winHeight = 800;
 
 GLfloat dnear = 5.0f;
 GLfloat dfar = 150.0f;
