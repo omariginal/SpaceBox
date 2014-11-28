@@ -12,7 +12,7 @@ Camera::Camera() {
 	zref = 0.0;
 	vangle = 40.0;
 	dnear = 1.0;
-	dfar  = 10.0;
+	dfar  = 100.0;
 }
 
 void Camera::SetCamera(	GLfloat xeye1,  GLfloat yeye1, GLfloat zeye1,

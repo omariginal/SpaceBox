@@ -16,9 +16,11 @@
 
 GLint winWidth = 800, winHeight = 800;
 
-GLfloat dnear = 1.0f;
-GLfloat dfar = 1500.0f;
+GLfloat dnear = 5.0f;
+GLfloat dfar = 150.0f;
 GLfloat vangle = 40.0;
+
+Camera myEye;
 
 enum {
 	SKY_LEFT, SKY_BACK, SKY_RIGHT, SKY_FRONT, SKY_TOP, SKY_BOTTOM
@@ -112,10 +114,15 @@ void drawSkybox(float size) {
 
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	gluPerspective(vangle, 1.0, dnear, dfar);
+	gluPerspective(myEye.vangle, 1.0, myEye.dnear, myEye.dfar);
+
+	gluLookAt(myEye.getMC().mat[0][3], myEye.getMC().mat[1][3], myEye.getMC().mat[2][3], myEye.getMC().mat[0][1], myEye.yref, myEye.zref, myEye.getMC().mat[0][1], myEye.getMC().mat[1][1], myEye.getMC().mat[2][1]);
+
+//	glMatrixMode(GL_MODELVIEW);
+//	glLoadIdentity();
 
 	drawSkybox(10);
 
