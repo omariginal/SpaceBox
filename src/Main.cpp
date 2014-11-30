@@ -1,183 +1,383 @@
-/*
- * Main.cpp
+
+/* Copyright (c) Mark J. Kilgard, 1994. */
+
+/**
+ * (c) Copyright 1993, Silicon Graphics, Inc.
+ * ALL RIGHTS RESERVED
+ * Permission to use, copy, modify, and distribute this software for
+ * any purpose and without fee is hereby granted, provided that the above
+ * copyright notice appear in all copies and that both the copyright notice
+ * and this permission notice appear in supporting documentation, and that
+ * the name of Silicon Graphics, Inc. not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission.
  *
- *  Created on: Nov 26, 2014
- *      Author: Jackson
+ * THE MATERIAL EMBODIED ON THIS SOFTWARE IS PROVIDED TO YOU "AS-IS"
+ * AND WITHOUT WARRANTY OF ANY KIND, EXPRESS, IMPLIED OR OTHERWISE,
+ * INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY OR
+ * FITNESS FOR A PARTICULAR PURPOSE.  IN NO EVENT SHALL SILICON
+ * GRAPHICS, INC.  BE LIABLE TO YOU OR ANYONE ELSE FOR ANY DIRECT,
+ * SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY
+ * KIND, OR ANY DAMAGES WHATSOEVER, INCLUDING WITHOUT LIMITATION,
+ * LOSS OF PROFIT, LOSS OF USE, SAVINGS OR REVENUE, OR THE CLAIMS OF
+ * THIRD PARTIES, WHETHER OR NOT SILICON GRAPHICS, INC.  HAS BEEN
+ * ADVISED OF THE POSSIBILITY OF SUCH LOSS, HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE
+ * POSSESSION, USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * US Government Users Restricted Rights
+ * Use, duplication, or disclosure by the Government is subject to
+ * restrictions set forth in FAR 52.227.19(c)(2) or subparagraph
+ * (c)(1)(ii) of the Rights in Technical Data and Computer Software
+ * clause at DFARS 252.227-7013 and/or in similar or successor
+ * clauses in the FAR or the DOD or NASA FAR Supplement.
+ * Unpublished-- rights reserved under the copyright laws of the
+ * United States.  Contractor/manufacturer is Silicon Graphics,
+ * Inc., 2011 N.  Shoreline Blvd., Mountain View, CA 94039-7311.
+ *
+ * OpenGL(TM) is a trademark of Silicon Graphics, Inc.
  */
-#include <stdlib.h>
+
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <math.h>
-#include <GL/glew.h>
+#include <time.h>
 #include <GL/glut.h>
 
-#include "glaux.h"
-#include "Camera.hpp"
-#include "World.hpp"
-
-GLint winWidth = 800, winHeight = 800;
-
-GLfloat dnear = 5.0f;
-GLfloat dfar = 150.0f;
-GLfloat vangle = 40.0;
-
-Camera myEye;
+#undef PI               /* Some systems may have this defined. */
+#define PI 3.141592657
 
 enum {
-	SKY_LEFT, SKY_BACK, SKY_RIGHT, SKY_FRONT, SKY_TOP, SKY_BOTTOM
+  NORMAL = 0,
+  WEIRD = 1
 };
-unsigned int skybox[6];
 
-void drawSkybox(float size) {
-	glColor3f(.7, .7, .7);
-	bool b1 = glIsEnabled(GL_TEXTURE_2D);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, skybox[SKY_BACK]);
-	glBegin(GL_QUADS);
-	//back face
-	glTexCoord2f(0, 0);
-	glVertex3f(size / 2, size / 2, size / 2);
-	glTexCoord2f(1, 0);
-	glVertex3f(-size / 2, size / 2, size / 2);
-	glTexCoord2f(1, 1);
-	glVertex3f(-size / 2, -size / 2, size / 2);
-	glTexCoord2f(0, 1);
-	glVertex3f(size / 2, -size / 2, size / 2);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, skybox[SKY_LEFT]);
-	glBegin(GL_QUADS);
-	//left face
-	glTexCoord2f(0, 0);
-	glVertex3f(-size / 2, size / 2, size / 2);
-	glTexCoord2f(1, 0);
-	glVertex3f(-size / 2, size / 2, -size / 2);
-	glTexCoord2f(1, 1);
-	glVertex3f(-size / 2, -size / 2, -size / 2);
-	glTexCoord2f(0, 1);
-	glVertex3f(-size / 2, -size / 2, size / 2);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, skybox[SKY_FRONT]);
-	glBegin(GL_QUADS);
-	//front face
-	glTexCoord2f(1, 0);
-	glVertex3f(size / 2, size / 2, -size / 2);
-	glTexCoord2f(0, 0);
-	glVertex3f(-size / 2, size / 2, -size / 2);
-	glTexCoord2f(0, 1);
-	glVertex3f(-size / 2, -size / 2, -size / 2);
-	glTexCoord2f(1, 1);
-	glVertex3f(size / 2, -size / 2, -size / 2);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, skybox[SKY_RIGHT]);
-	glBegin(GL_QUADS);
-	//right face
-	glTexCoord2f(0, 0);
-	glVertex3f(size / 2, size / 2, -size / 2);
-	glTexCoord2f(1, 0);
-	glVertex3f(size / 2, size / 2, size / 2);
-	glTexCoord2f(1, 1);
-	glVertex3f(size / 2, -size / 2, size / 2);
-	glTexCoord2f(0, 1);
-	glVertex3f(size / 2, -size / 2, -size / 2);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, skybox[SKY_TOP]);
-	glBegin(GL_QUADS);
-	//top face
-	glTexCoord2f(1, 0);
-	glVertex3f(size / 2, size / 2, size / 2);
-	glTexCoord2f(0, 0);
-	glVertex3f(-size / 2, size / 2, size / 2);
-	glTexCoord2f(0, 1);
-	glVertex3f(-size / 2, size / 2, -size / 2);
-	glTexCoord2f(1, 1);
-	glVertex3f(size / 2, size / 2, -size / 2);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, skybox[SKY_BOTTOM]);
-	glBegin(GL_QUADS);
-	//bottom face
-	glTexCoord2f(1, 1);
-	glVertex3f(size / 2, -size / 2, size / 2);
-	glTexCoord2f(0, 1);
-	glVertex3f(-size / 2, -size / 2, size / 2);
-	glTexCoord2f(0, 0);
-	glVertex3f(-size / 2, -size / 2, -size / 2);
-	glTexCoord2f(1, 0);
-	glVertex3f(size / 2, -size / 2, -size / 2);
-	glEnd();
+enum {
+  STREAK = 0,
+  CIRCLE = 1
+};
 
-	glEnable(GL_LIGHTING);
-	glEnable(GL_DEPTH_TEST);
-	if (!b1)
-		glDisable(GL_TEXTURE_2D);
+#define MAXSTARS 400
+#define MAXPOS 10000
+#define MAXWARP 10
+#define MAXANGLES 6000
+
+typedef struct _starRec {
+  GLint type;
+  float x[2], y[2], z[2];
+  float offsetX, offsetY, offsetR, rotation;
+} starRec;
+
+GLenum doubleBuffer;
+GLint windW = 1000, windH = 600;
+
+GLenum flag = NORMAL;
+GLint starCount = MAXSTARS / 2;
+float speed = 1.0;
+GLint nitro = 0;
+starRec stars[MAXSTARS];
+float sinTable[MAXANGLES];
+
+float
+Sin(float angle)
+{
+  return (sinTable[(GLint) angle]);
 }
 
-void display(void) {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	gluPerspective(myEye.vangle, 1.0, myEye.dnear, myEye.dfar);
-
-	gluLookAt(myEye.getMC().mat[0][3], myEye.getMC().mat[1][3], myEye.getMC().mat[2][3], myEye.getMC().mat[0][1], myEye.yref, myEye.zref, myEye.getMC().mat[0][1], myEye.getMC().mat[1][1], myEye.getMC().mat[2][1]);
-
-//	glMatrixMode(GL_MODELVIEW);
-//	glLoadIdentity();
-
-	drawSkybox(10);
-
-	glFlush();
-	glutSwapBuffers();
+float
+Cos(float angle)
+{
+  return (sinTable[((GLint) angle + (MAXANGLES / 4)) % MAXANGLES]);
 }
 
-unsigned int loadTexture(const char* filename) //load the filename named texture
-		{
-	unsigned int num;       //the id for the texture
-	glGenTextures(1, &num);  //we generate a unique one
-	AUX_RGBImageRec *pBitMap = auxDIBImageLoad(filename);
-	if (pBitMap == NULL)
-		exit(0);
-
-	glBindTexture(GL_TEXTURE_2D, num);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, pBitMap->sizeX, pBitMap->sizeY, 0, GL_RGB,
-	GL_UNSIGNED_BYTE, pBitMap->data);
-	return num;     //and we return the id
+void
+NewStar(GLint n, GLint d)
+{
+  if (rand() % 4 == 0) {
+    stars[n].type = CIRCLE;
+  } else {
+    stars[n].type = STREAK;
+  }
+  stars[n].x[0] = (float) (rand() % MAXPOS - MAXPOS / 2);
+  stars[n].y[0] = (float) (rand() % MAXPOS - MAXPOS / 2);
+  stars[n].z[0] = (float) (rand() % MAXPOS + d);
+  stars[n].x[1] = stars[n].x[0];
+  stars[n].y[1] = stars[n].y[0];
+  stars[n].z[1] = stars[n].z[0];
+  if (rand() % 4 == 0 && flag == WEIRD) {
+    stars[n].offsetX = (float) (rand() % 100 - 100 / 2);
+    stars[n].offsetY = (float) (rand() % 100 - 100 / 2);
+    stars[n].offsetR = (float) (rand() % 25 - 25 / 2);
+  } else {
+    stars[n].offsetX = 0.0;
+    stars[n].offsetY = 0.0;
+    stars[n].offsetR = 0.0;
+  }
 }
 
-void init(void) {
+void
+RotatePoint(float *x, float *y, float rotation)
+{
+  float tmpX, tmpY;
 
-	glClearColor(0.0, 0.0, 0.0, 1.0);  // Set display-window color to black
-	glMatrixMode(GL_PROJECTION);
-	gluOrtho2D(0.0, winWidth, winHeight, 0.0);
-	glColor3f(1.0, 0.0, 0.0);
-
-	skybox[SKY_LEFT] = loadTexture("src/Galaxy_LT.bmp");
-	skybox[SKY_BACK] = loadTexture("src/Galaxy_BK.bmp");
-	skybox[SKY_RIGHT] = loadTexture("src/Galaxy_RT.bmp");
-	skybox[SKY_FRONT] = loadTexture("src/Galaxy_FT.bmp");
-	skybox[SKY_TOP] = loadTexture("src/Galaxy_DN.bmp");
-	skybox[SKY_BOTTOM] = loadTexture("src/Galaxy_UP.bmp");
+  tmpX = *x * Cos(rotation) - *y * Sin(rotation);
+  tmpY = *y * Cos(rotation) + *x * Sin(rotation);
+  *x = tmpX;
+  *y = tmpY;
 }
 
-int main(int argc, char** argv) {
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);
-	glutInitWindowPosition(100, 100);
-	glutInitWindowSize(winWidth, winHeight);
-	glutCreateWindow("SpaceBox");
-	glewInit();
+void
+MoveStars(void)
+{
+  float offset;
+  GLint n;
 
-	init();
-//	menu();
-	glutDisplayFunc(display);
-//	glutMotionFunc(mouseMotion);
-//	glutMouseFunc(mouseAction);
-//	glutAttachMenu(GLUT_RIGHT_BUTTON);
-	glutMainLoop();
+  offset = speed * 60.0;
 
-	return 0;
+  for (n = 0; n < starCount; n++) {
+    stars[n].x[1] = stars[n].x[0];
+    stars[n].y[1] = stars[n].y[0];
+    stars[n].z[1] = stars[n].z[0];
+    stars[n].x[0] += stars[n].offsetX;
+    stars[n].y[0] += stars[n].offsetY;
+    stars[n].z[0] -= offset;
+    stars[n].rotation += stars[n].offsetR;
+    if (stars[n].rotation > MAXANGLES) {
+      stars[n].rotation = 0.0;
+    }
+  }
 }
 
+GLenum
+StarPoint(GLint n)
+{
+  float x0, y0;
 
+  x0 = stars[n].x[0] * windW / stars[n].z[0];
+  y0 = stars[n].y[0] * windH / stars[n].z[0];
+  RotatePoint(&x0, &y0, stars[n].rotation);
+  x0 += windW / 2.0;
+  y0 += windH / 2.0;
+
+  if (x0 >= 0.0 && x0 < windW && y0 >= 0.0 && y0 < windH) {
+    return GL_TRUE;
+  } else {
+    return GL_FALSE;
+  }
+}
+
+void
+ShowStar(GLint n)
+{
+  float x0, y0, x1, y1, width;
+  GLint i;
+
+  x0 = stars[n].x[0] * windW / stars[n].z[0];
+  y0 = stars[n].y[0] * windH / stars[n].z[0];
+  RotatePoint(&x0, &y0, stars[n].rotation);
+  x0 += windW / 2.0;
+  y0 += windH / 2.0;
+
+  if (x0 >= 0.0 && x0 < windW && y0 >= 0.0 && y0 < windH) {
+    if (stars[n].type == STREAK) {
+      x1 = stars[n].x[1] * windW / stars[n].z[1];
+      y1 = stars[n].y[1] * windH / stars[n].z[1];
+      RotatePoint(&x1, &y1, stars[n].rotation);
+      x1 += windW / 2.0;
+      y1 += windH / 2.0;
+
+      glLineWidth(MAXPOS / 100.0 / stars[n].z[0] + 1.0);
+      glColor3f(1.0, (MAXWARP - speed) / MAXWARP, (MAXWARP - speed) / MAXWARP);
+      if (fabs(x0 - x1) < 1.0 && fabs(y0 - y1) < 1.0) {
+        glBegin(GL_POINTS);
+        glVertex2f(x0, y0);
+        glEnd();
+      } else {
+        glBegin(GL_LINES);
+        glVertex2f(x0, y0);
+        glVertex2f(x1, y1);
+        glEnd();
+      }
+    } else {
+      width = MAXPOS / 10.0 / stars[n].z[0] + 1.0;
+      glColor3f(1.0, 0.0, 0.0);
+      glBegin(GL_POLYGON);
+      for (i = 0; i < 8; i++) {
+        float x = x0 + width * Cos((float) i * MAXANGLES / 8.0);
+        float y = y0 + width * Sin((float) i * MAXANGLES / 8.0);
+        glVertex2f(x, y);
+      };
+      glEnd();
+    }
+  }
+}
+
+void
+UpdateStars(void)
+{
+  GLint n;
+
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  for (n = 0; n < starCount; n++) {
+    if (stars[n].z[0] > speed || (stars[n].z[0] > 0.0 && speed < MAXWARP)) {
+      if (StarPoint(n) == GL_FALSE) {
+        NewStar(n, MAXPOS);
+      }
+    } else {
+      NewStar(n, MAXPOS);
+    }
+  }
+}
+
+void
+ShowStars(void)
+{
+  GLint n;
+
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  for (n = 0; n < starCount; n++) {
+    if (stars[n].z[0] > speed || (stars[n].z[0] > 0.0 && speed < MAXWARP)) {
+      ShowStar(n);
+    }
+  }
+}
+
+static void
+Init(void)
+{
+  float angle;
+  GLint n;
+
+  srand((unsigned int) time(NULL));
+
+  for (n = 0; n < MAXSTARS; n++) {
+    NewStar(n, 100);
+  }
+
+  angle = 0.0;
+  for (n = 0; n <= MAXANGLES; n++) {
+    sinTable[n] = sin(angle);
+    angle += PI / (MAXANGLES / 2.0);
+  }
+
+  glClearColor(0.0, 0.0, 0.0, 0.0);
+
+  glDisable(GL_DITHER);
+}
+
+void
+Reshape(int width, int height)
+{
+  windW = width;
+  windH = height;
+
+  glViewport(0, 0, windW, windH);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluOrtho2D(-0.5, windW + 0.5, -0.5, windH + 0.5);
+  glMatrixMode(GL_MODELVIEW);
+}
+
+/* ARGSUSED1 */
+static void
+Key(unsigned char key, int x, int y)
+{
+  switch (key) {
+  case ' ':
+    flag = (flag == NORMAL) ? WEIRD : NORMAL;
+    break;
+  case 't':
+    nitro = 1;
+    break;
+  case 27:
+    exit(0);
+  }
+}
+
+void
+Idle(void)
+{
+  MoveStars();
+  UpdateStars();
+  if (nitro > 0) {
+    speed = (float) (nitro / 10) + 1.0;
+    if (speed > MAXWARP) {
+      speed = MAXWARP;
+    }
+    if (++nitro > MAXWARP * 10) {
+      nitro = -nitro;
+    }
+  } else if (nitro < 0) {
+    nitro++;
+    speed = (float) (-nitro / 10) + 1.0;
+    if (speed > MAXWARP) {
+      speed = MAXWARP;
+    }
+  }
+  glutPostRedisplay();
+}
+
+void
+Display(void)
+{
+  ShowStars();
+  if (doubleBuffer) {
+    glutSwapBuffers();
+  } else {
+    glFlush();
+  }
+}
+
+void
+Visible(int state)
+{
+  if (state == GLUT_VISIBLE) {
+    glutIdleFunc(Idle);
+  } else {
+    glutIdleFunc(NULL);
+  }
+}
+
+static void
+Args(int argc, char **argv)
+{
+  GLint i;
+
+  doubleBuffer = GL_TRUE;
+
+  for (i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "-sb") == 0) {
+      doubleBuffer = GL_FALSE;
+    } else if (strcmp(argv[i], "-db") == 0) {
+      doubleBuffer = GL_TRUE;
+    }
+  }
+}
+
+int
+main(int argc, char **argv)
+{
+  GLenum type;
+
+  glutInitWindowSize(windW, windH);
+  glutInit(&argc, argv);
+  Args(argc, argv);
+
+  type = GLUT_RGB;
+  type |= (doubleBuffer) ? GLUT_DOUBLE : GLUT_SINGLE;
+  glutInitDisplayMode(type);
+  glutCreateWindow("Stars");
+
+  Init();
+
+  glutReshapeFunc(Reshape);
+  glutKeyboardFunc(Key);
+  glutVisibilityFunc(Visible);
+  glutDisplayFunc(Display);
+  glutMainLoop();
+  return 0;             /* ANSI C requires main to return int. */
+}
