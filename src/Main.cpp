@@ -31,7 +31,7 @@ float ball_posX = width / 2;
 float ball_posY = height / 2;
 float ball_dirX = -1.0f;
 float ball_dirY = 0.0f;
-int ball_size = 80;
+int ball_size = 20;
 int ball_speed = 5;
 
 float paddle_leftX = 10.0f;
@@ -52,7 +52,7 @@ float paddle_botY = 0.0f;
 float paddle_topX = 0;
 float paddle_topY = height - paddle_heightt - 10;
 
-#undef PI
+//#undef PI
 #define PI 3.141592657
 #define DEG2RAD (M_PI/180.0)
 #define MAXSTARS 400
@@ -115,14 +115,14 @@ void drawRect(float x, float y, float width, float height) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnd();
 }
-void drawCircle(float radius)
+void drawCircle(float x, float y, float radius)
 {
    glBegin(GL_LINE_LOOP);
 
    for (int i=0; i < 360; i++)
    {
       float degInRad = i*DEG2RAD;
-      glVertex2f(cos(degInRad)*radius,sin(degInRad)*radius);
+      glVertex2f(cos(degInRad)*radius+x,sin(degInRad)*radius+y);
    }
 
    glEnd();
@@ -318,9 +318,9 @@ void draw() {
 		glColor4f(.23, .78, .32, .41);
 		drawRect(paddle_botX, paddle_botY, paddle_widtht, paddle_heightt);
 		glColor4f(.23, .78, .32, 0.41);
-		// draw score
-		drawRect(ball_posX - ball_size / 2, ball_posY - ball_size / 2, ball_size,
-					ball_size);
+
+		drawCircle(ball_posX-ball_size/2,ball_posY-ball_size/2,ball_size);
+		//DrawCircle(ball_posX-ball_size/2,ball_posY-ball_size/2,ball_size,20);
 
 	}
 	glutSwapBuffers();
@@ -361,7 +361,7 @@ void updateBall() {
 	}
 	//hit by top paddle
 	if (ball_posX > paddle_topX && ball_posX < paddle_topX + paddle_height
-			&& ball_posY > paddle_topY - paddle_width
+			&& ball_posY > paddle_topY
 			//&& ball_posY < paddle_topY
 					) {
 		float t = ((ball_posX - paddle_topX) / paddle_height) - 0.5f;
@@ -372,7 +372,7 @@ void updateBall() {
 	}
 	//hit by bottom paddle
 	if (ball_posX > paddle_botX && ball_posX < paddle_botX + paddle_height
-			&& ball_posY < paddle_botY + paddle_width
+			&& ball_posY < paddle_botY + 2*paddle_width
 			// && ball_posY > paddle_botY
 					) {
 		float t = ((ball_posX - paddle_botX) / paddle_height) - 0.5f;
@@ -388,6 +388,7 @@ void updateBall() {
 		ball_dirX = fabs(ball_dirX);
 		ball_dirY = 0;
 		ball_speed = 5.0;
+		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL, SND_FILENAME | SND_ASYNC);
 	}
 
 	// hit right wall
@@ -397,6 +398,7 @@ void updateBall() {
 		ball_dirX = -fabs(ball_dirX);
 		ball_dirY = 0;
 		ball_speed = 5.0;
+		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL, SND_FILENAME | SND_ASYNC);
 	}
 
 	// hit top wall
@@ -406,6 +408,7 @@ void updateBall() {
 		ball_dirX = -fabs(ball_dirX);
 		ball_dirY = 0;
 		ball_speed = 5.0;
+		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL, SND_FILENAME | SND_ASYNC);
 	}
 	// hit bottom wall
 	if (ball_posY < 0) {
@@ -414,6 +417,7 @@ void updateBall() {
 		ball_dirX = 0;
 		ball_dirY = fabs(ball_dirY);
 		ball_speed = 5.0;
+		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL, SND_FILENAME | SND_ASYNC);
 	}
 	vec2_norm(ball_dirX, ball_dirY);
 }
@@ -492,7 +496,7 @@ void Visible(int state) {
 }
 
 int main(int argc, char** argv) {
-	PlaySound((LPCSTR) "src/No_Flex_Zone.wav", NULL, SND_FILENAME | SND_ASYNC | SND_NOSTOP);
+	//PlaySound((LPCSTR) "src/No_Flex_Zone.wav", NULL, SND_FILENAME | SND_ASYNC | SND_NOSTOP);
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowPosition(50, 0);
