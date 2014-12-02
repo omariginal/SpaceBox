@@ -505,7 +505,7 @@ int main(int argc, char** argv) {
 	glutDisplayFunc(draw);
 	glutTimerFunc(interval, update, 0);
 	enable2D(width, height);
-	mciSendString("open src/No_Flex_Zone.wav alias announce", 0, 0, 0 );
+	mciSendString("open src/Z2Pa66C8Y1c.wav alias announce", 0, 0, 0 );
 	mciSendString("play announce", 0, 0, 0 );
 	//PlaySound((LPCSTR) "src/No_Flex_Zone.wav", NULL, SND_FILENAME | SND_NOSTOP | SND_ASYNC);
 	glutMainLoop();
