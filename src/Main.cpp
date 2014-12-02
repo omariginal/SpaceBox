@@ -28,8 +28,6 @@ int width = 1000;
 int height = 680;
 int interval = 1000 / 60;
 
-int score = 0;
-
 int paddleShort = 20;
 int paddleLong = 180;
 
@@ -61,7 +59,7 @@ GLint windW = 1000, windH = 600;
 GLenum flag = NORMAL;
 GLint starCount = MAXSTARS / 2;
 float speed = 0.2;
-GLint nitro = 0;
+GLint nitro = 1;
 starRec stars[MAXSTARS];
 float sinTable[MAXANGLES];
 
@@ -77,14 +75,6 @@ std::string int2str(int x) {
 	std::stringstream ss;
 	ss << x;
 	return ss.str();
-}
-
-void drawText(float x, float y, std::string text) {
-
-glRasterPos2f(x, y);
-glColor4f(1,1,1,.5);
-glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, (const unsigned char*)text.c_str());
-
 }
 
 void drawCircle(float x, float y, float radius) {
@@ -286,8 +276,9 @@ void draw() {
 		//draw ball
 		ball.draw(ball.posX - ball.size / 2, ball.posY - ball.size / 2,
 				ball.size);
-		drawText(width / 2 , height/2 , int2str(score));
+
 	}
+
 	glutSwapBuffers();
 }
 void vec2_norm(float& x, float &y) {
@@ -311,7 +302,6 @@ void updateBall() {
 		ball.speed = ball.speed + 1.1;
 		PlaySound((LPCSTR) "src/Mario_Jump_Sound.wav", NULL,
 				SND_FILENAME | SND_ASYNC);
-		score++;
 	}
 	// hit by right paddle
 	if (ball.posX > rightPaddle.posX
@@ -324,7 +314,6 @@ void updateBall() {
 		ball.speed = ball.speed + 1.1;
 		PlaySound((LPCSTR) "src/Mario_Jump_Sound.wav", NULL,
 				SND_FILENAME | SND_ASYNC);
-		score++;
 	}
 	//hit by top paddle
 	if (ball.posX > topPaddle.posX && ball.posX < topPaddle.posX + paddleLong
@@ -335,7 +324,6 @@ void updateBall() {
 		ball.speed = ball.speed + 1.1;
 		PlaySound((LPCSTR) "src/Mario_Jump_Sound.wav", NULL,
 				SND_FILENAME | SND_ASYNC);
-		score++;
 	}
 	//hit by bottom paddle
 	if (ball.posX > botPaddle.posX && ball.posX < botPaddle.posX + paddleLong
@@ -346,10 +334,10 @@ void updateBall() {
 		ball.speed = ball.speed + 1.1;
 		PlaySound((LPCSTR) "src/Mario_Jump_Sound.wav", NULL,
 				SND_FILENAME | SND_ASYNC);
-		score++;
 	}
 	// hit left wall
 	if (ball.posX < 0) {
+		nitro = 1;
 		ball.posX = width / 2;
 		ball.posY = height / 2;
 		ball.dirX = fabs(ball.dirX);
@@ -357,11 +345,11 @@ void updateBall() {
 		ball.speed = 5.0;
 		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL,
 				SND_FILENAME | SND_ASYNC);
-		score = 0;
 	}
 
 	// hit right wall
 	if (ball.posX > width) {
+		nitro = 1;
 		ball.posX = width / 2;
 		ball.posY = height / 2;
 		ball.dirX = -fabs(ball.dirX);
@@ -369,11 +357,11 @@ void updateBall() {
 		ball.speed = 5.0;
 		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL,
 				SND_FILENAME | SND_ASYNC);
-		score = 0;
 	}
 
 	// hit top wall
 	if (ball.posY > height) {
+		nitro = 1;
 		ball.posX = width / 2;
 		ball.posY = height / 2;
 		ball.dirX = -fabs(ball.dirX);
@@ -381,10 +369,10 @@ void updateBall() {
 		ball.speed = 5.0;
 		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL,
 				SND_FILENAME | SND_ASYNC);
-		score = 0;
 	}
 	// hit bottom wall
 	if (ball.posY < 0) {
+		nitro = 1;
 		ball.posX = width / 2;
 		ball.posY = height / 2;
 		ball.dirX = 0;
@@ -392,7 +380,6 @@ void updateBall() {
 		ball.speed = 5.0;
 		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL,
 				SND_FILENAME | SND_ASYNC);
-		score = 0;
 	}
 	vec2_norm(ball.dirX, ball.dirY);
 }
