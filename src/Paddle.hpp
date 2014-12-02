@@ -17,6 +17,7 @@ public:
 	float height;
 	float posX;
 	float posY;
+	float speed;
 
 	Paddle();
 	void draw(float x, float y, float width, float height);

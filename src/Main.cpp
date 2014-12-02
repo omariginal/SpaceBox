@@ -12,6 +12,13 @@
 #include "World.hpp"
 #include <mmsystem.h>
 #include "Paddle.hpp"
+#include "ball.hpp"
+
+#define DEG2RAD (M_PI/180.0)
+#define MAXSTARS 4000
+#define MAXPOS 10000
+#define MAXWARP 10
+#define MAXANGLES 6000
 
 int KEY_W = 0x57;
 int KEY_A = 0x41;
@@ -24,28 +31,15 @@ int interval = 1000 / 60;
 
 int paddleShort = 20;
 int paddleLong = 180;
-int paddle_speed = 10;
-
-float ball_posX = width / 2;
-float ball_posY = height / 2;
-float ball_dirX = -1.0f;
-float ball_dirY = 0.0f;
-int ball_size = 20;
-int ball_speed = 5;
 
 Paddle leftPaddle;
 Paddle rightPaddle;
 Paddle topPaddle;
 Paddle botPaddle;
 
-GLint play = 1;
+Ball ball;
 
-#define PI 3.141592657
-#define DEG2RAD (M_PI/180.0)
-#define MAXSTARS 4000
-#define MAXPOS 10000
-#define MAXWARP 10
-#define MAXANGLES 6000
+GLint play = 1;
 
 enum {
 	NORMAL = 0, WEIRD = 1
@@ -55,8 +49,6 @@ enum {
 	STREAK = 0, CIRCLE = 1
 };
 
-
-
 typedef struct _starRec {
 	GLint type;
 	float x[2], y[2], z[2];
@@ -65,7 +57,6 @@ typedef struct _starRec {
 
 GLenum doubleBuffer;
 GLint windW = 1000, windH = 600;
-
 GLenum flag = NORMAL;
 GLint starCount = MAXSTARS / 2;
 float speed = 0.2;
@@ -82,59 +73,46 @@ float Cos(float angle) {
 }
 
 std::string int2str(int x) {
-	// converts int to string
 	std::stringstream ss;
 	ss << x;
 	return ss.str();
 }
 
-void drawRect(float x, float y, float width, float height) {
-	//glColor3f(1.0f, 1.0f, 1.0f);
-	glBegin(GL_QUADS);
-	glVertex2f(x, y);
+void drawCircle(float x, float y, float radius) {
+	glBegin(GL_LINE_LOOP);
 
-	glVertex2f(x + width, y);
-	glVertex2f(x + width, y + height);
-	glVertex2f(x, y + height);
+	for (int i = 0; i < 360; i++) {
+		float degInRad = i * DEG2RAD;
+		glVertex2f(cos(degInRad) * radius + x, sin(degInRad) * radius + y);
+	}
+
 	glEnd();
-}
-void drawCircle(float x, float y, float radius)
-{
-   glBegin(GL_LINE_LOOP);
-
-   for (int i=0; i < 360; i++)
-   {
-      float degInRad = i*DEG2RAD;
-      glVertex2f(cos(degInRad)*radius+x,sin(degInRad)*radius+y);
-   }
-
-   glEnd();
 }
 void keyboard() {
 	// left paddle
 	if (GetAsyncKeyState(VK_UP) && (rightPaddle.posY < 500)) {
-		rightPaddle.posY += paddle_speed;
+		rightPaddle.posY += rightPaddle.speed;
 	}
 	if (GetAsyncKeyState(VK_DOWN) && (rightPaddle.posY > 0)) {
-		rightPaddle.posY -= paddle_speed;
+		rightPaddle.posY -= rightPaddle.speed;
 	}
 	if (GetAsyncKeyState(VK_LEFT) && (botPaddle.posX > 0)) {
-		botPaddle.posX -= paddle_speed;
+		botPaddle.posX -= botPaddle.speed;
 	}
 	if (GetAsyncKeyState(VK_RIGHT) && (botPaddle.posX < 1000)) {
-		botPaddle.posX += paddle_speed;
+		botPaddle.posX += botPaddle.speed;
 	}
 	if (GetAsyncKeyState(KEY_W) && (leftPaddle.posY < 500)) {
-		leftPaddle.posY += paddle_speed;
+		leftPaddle.posY += leftPaddle.speed;
 	}
-	if (GetAsyncKeyState(KEY_S) && (leftPaddle.posY> 0)) {
-		leftPaddle.posY -= paddle_speed;
+	if (GetAsyncKeyState(KEY_S) && (leftPaddle.posY > 0)) {
+		leftPaddle.posY -= leftPaddle.speed;
 	}
 	if (GetAsyncKeyState(KEY_A) && (topPaddle.posX > 0)) {
-		topPaddle.posX -= paddle_speed;
+		topPaddle.posX -= topPaddle.speed;
 	}
 	if (GetAsyncKeyState(KEY_D) && (topPaddle.posX < 1000)) {
-		topPaddle.posX += paddle_speed;
+		topPaddle.posX += topPaddle.speed;
 	}
 }
 
@@ -186,8 +164,7 @@ void ShowStar(GLint n) {
 			y1 += windH / 2.0;
 
 			glLineWidth(MAXPOS / 100.0 / stars[n].z[0] + 1.0);
-			glColor3f(1.0, 1,
-					(MAXWARP - speed) / MAXWARP);
+			glColor3f(1.0, 1, (MAXWARP - speed) / MAXWARP);
 			if (fabs(x0 - x1) < 1.0 && fabs(y0 - y1) < 1.0) {
 				glBegin(GL_POINTS);
 				glVertex2f(x0, y0);
@@ -280,29 +257,26 @@ void ShowStars(void) {
 }
 
 void draw() {
-
-	// clear (has to be done at the beginning)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable( GL_DEPTH_TEST);
 	glLoadIdentity();
-	// draw paddles
 	if (play == 1) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable( GL_BLEND);
 		glColor4f(.23, .78, .32, 0.1);
 		ShowStars();
-
-		glColor4f(.23, .78, .32, 0.41);
-		leftPaddle.draw(leftPaddle.posX,leftPaddle.posY,leftPaddle.width,leftPaddle.height);
-		glColor4f(.23, .78, .32, .41);
-		rightPaddle.draw(rightPaddle.posX,rightPaddle.posY,rightPaddle.width,rightPaddle.height);
-		glColor4f(.23, .78, .32, .41);
-		topPaddle.draw(topPaddle.posX,topPaddle.posY,topPaddle.width,topPaddle.height);
-		glColor4f(.23, .78, .32, .41);
-		botPaddle.draw(botPaddle.posX,botPaddle.posY,botPaddle.width,botPaddle.height);
-		glColor4f(.23, .78, .32, 0.41);
-
-		drawCircle(ball_posX-ball_size/2,ball_posY-ball_size/2,ball_size);
+		//draw paddles
+		leftPaddle.draw(leftPaddle.posX, leftPaddle.posY, leftPaddle.width,
+				leftPaddle.height);
+		rightPaddle.draw(rightPaddle.posX, rightPaddle.posY, rightPaddle.width,
+				rightPaddle.height);
+		topPaddle.draw(topPaddle.posX, topPaddle.posY, topPaddle.width,
+				topPaddle.height);
+		botPaddle.draw(botPaddle.posX, botPaddle.posY, botPaddle.width,
+				botPaddle.height);
+		//draw ball
+		ball.draw(ball.posX - ball.size / 2, ball.posY - ball.size / 2,
+				ball.size);
 
 	}
 	glutSwapBuffers();
@@ -316,92 +290,94 @@ void vec2_norm(float& x, float &y) {
 	}
 }
 void updateBall() {
-	ball_posX += ball_dirX * ball_speed;
-	ball_posY += ball_dirY * ball_speed;
-
+	ball.posX += ball.dirX * ball.speed;
+	ball.posY += ball.dirY * ball.speed;
 	// hit by left paddle
-	if (ball_posX < leftPaddle.posX + paddleShort && ball_posX > leftPaddle.posX
-			&& ball_posY < leftPaddle.posY + paddleLong
-			&& ball_posY > leftPaddle.posY) {
-		float t = ((ball_posY - leftPaddle.posY) / paddleLong) - 0.5;
-		ball_dirX = fabs(ball_dirX); // force it to be positive
-		ball_dirY = t;
-		ball_speed = ball_speed + 1.1;
-		PlaySound((LPCSTR) "src/Mario_Jump_Sound.wav", NULL, SND_FILENAME | SND_ASYNC);
+	if (ball.posX < leftPaddle.posX + paddleShort && ball.posX > leftPaddle.posX
+			&& ball.posY < leftPaddle.posY + paddleLong
+			&& ball.posY > leftPaddle.posY) {
+		float t = ((ball.posY - leftPaddle.posY) / paddleLong) - 0.5;
+		ball.dirX = fabs(ball.dirX); // force it to be positive
+		ball.dirY = t;
+		ball.speed = ball.speed + 1.1;
+		PlaySound((LPCSTR) "src/Mario_Jump_Sound.wav", NULL,
+				SND_FILENAME | SND_ASYNC);
 	}
-
 	// hit by right paddle
-	if (ball_posX > rightPaddle.posX
-			&& ball_posX < rightPaddle.posX + paddleShort
-			&& ball_posY < rightPaddle.posY + paddleLong
-			&& ball_posY > rightPaddle.posY) {
-		float t = ((ball_posY - rightPaddle.posY) / paddleLong) - 0.5f;
-		ball_dirX = -fabs(ball_dirX); // force it to be negative
-		ball_dirY = t;
-		ball_speed = ball_speed + 1.1;
-		PlaySound((LPCSTR) "src/Mario_Jump_Sound.wav", NULL, SND_FILENAME | SND_ASYNC);
+	if (ball.posX > rightPaddle.posX
+			&& ball.posX < rightPaddle.posX + paddleShort
+			&& ball.posY < rightPaddle.posY + paddleLong
+			&& ball.posY > rightPaddle.posY) {
+		float t = ((ball.posY - rightPaddle.posY) / paddleLong) - 0.5f;
+		ball.dirX = -fabs(ball.dirX); // force it to be negative
+		ball.dirY = t;
+		ball.speed = ball.speed + 1.1;
+		PlaySound((LPCSTR) "src/Mario_Jump_Sound.wav", NULL,
+				SND_FILENAME | SND_ASYNC);
 	}
 	//hit by top paddle
-	if (ball_posX > topPaddle.posX && ball_posX < topPaddle.posX + paddleLong
-			&& ball_posY > topPaddle.posY
-			//&& ball_posY < topPaddle.posY
-					) {
-		float t = ((ball_posX - topPaddle.posX) / paddleLong) - 0.5f;
-		ball_dirY = -fabs(ball_dirY); // force it to be negative
-		ball_dirX = t;
-		ball_speed = ball_speed + 1.1;
-		PlaySound((LPCSTR) "src/Mario_Jump_Sound.wav", NULL, SND_FILENAME | SND_ASYNC);
+	if (ball.posX > topPaddle.posX && ball.posX < topPaddle.posX + paddleLong
+			&& ball.posY > topPaddle.posY) {
+		float t = ((ball.posX - topPaddle.posX) / paddleLong) - 0.5f;
+		ball.dirY = -fabs(ball.dirY); // force it to be negative
+		ball.dirX = t;
+		ball.speed = ball.speed + 1.1;
+		PlaySound((LPCSTR) "src/Mario_Jump_Sound.wav", NULL,
+				SND_FILENAME | SND_ASYNC);
 	}
 	//hit by bottom paddle
-	if (ball_posX > botPaddle.posX && ball_posX < botPaddle.posX + paddleLong
-			&& ball_posY < botPaddle.posY + 2*paddleShort
-			// && ball_posY > botPaddle.posY
-					) {
-		float t = ((ball_posX - botPaddle.posX) / paddleLong) - 0.5f;
-		ball_dirY = fabs(ball_dirY); // force it to be positive
-		ball_dirX = t;
-		ball_speed = ball_speed + 1.1;
-		PlaySound((LPCSTR) "src/Mario_Jump_Sound.wav", NULL, SND_FILENAME | SND_ASYNC);
+	if (ball.posX > botPaddle.posX && ball.posX < botPaddle.posX + paddleLong
+			&& ball.posY < botPaddle.posY + 2 * paddleShort) {
+		float t = ((ball.posX - botPaddle.posX) / paddleLong) - 0.5f;
+		ball.dirY = fabs(ball.dirY); // force it to be positive
+		ball.dirX = t;
+		ball.speed = ball.speed + 1.1;
+		PlaySound((LPCSTR) "src/Mario_Jump_Sound.wav", NULL,
+				SND_FILENAME | SND_ASYNC);
 	}
 	// hit left wall
-	if (ball_posX < 0) {
-		ball_posX = width / 2;
-		ball_posY = height / 2;
-		ball_dirX = fabs(ball_dirX);
-		ball_dirY = 0;
-		ball_speed = 5.0;
-		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL, SND_FILENAME | SND_ASYNC);
+	if (ball.posX < 0) {
+		ball.posX = width / 2;
+		ball.posY = height / 2;
+		ball.dirX = fabs(ball.dirX);
+		ball.dirY = 0;
+		ball.speed = 5.0;
+		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL,
+				SND_FILENAME | SND_ASYNC);
 	}
 
 	// hit right wall
-	if (ball_posX > width) {
-		ball_posX = width / 2;
-		ball_posY = height / 2;
-		ball_dirX = -fabs(ball_dirX);
-		ball_dirY = 0;
-		ball_speed = 5.0;
-		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL, SND_FILENAME | SND_ASYNC);
+	if (ball.posX > width) {
+		ball.posX = width / 2;
+		ball.posY = height / 2;
+		ball.dirX = -fabs(ball.dirX);
+		ball.dirY = 0;
+		ball.speed = 5.0;
+		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL,
+				SND_FILENAME | SND_ASYNC);
 	}
 
 	// hit top wall
-	if (ball_posY > height) {
-		ball_posX = width / 2;
-		ball_posY = height / 2;
-		ball_dirX = -fabs(ball_dirX);
-		ball_dirY = 0;
-		ball_speed = 5.0;
-		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL, SND_FILENAME | SND_ASYNC);
+	if (ball.posY > height) {
+		ball.posX = width / 2;
+		ball.posY = height / 2;
+		ball.dirX = -fabs(ball.dirX);
+		ball.dirY = 0;
+		ball.speed = 5.0;
+		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL,
+				SND_FILENAME | SND_ASYNC);
 	}
 	// hit bottom wall
-	if (ball_posY < 0) {
-		ball_posX = width / 2;
-		ball_posY = height / 2;
-		ball_dirX = 0;
-		ball_dirY = fabs(ball_dirY);
-		ball_speed = 5.0;
-		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL, SND_FILENAME | SND_ASYNC);
+	if (ball.posY < 0) {
+		ball.posX = width / 2;
+		ball.posY = height / 2;
+		ball.dirX = 0;
+		ball.dirY = fabs(ball.dirY);
+		ball.speed = 5.0;
+		PlaySound((LPCSTR) "src/Punch_Sound_Effect.wav", NULL,
+				SND_FILENAME | SND_ASYNC);
 	}
-	vec2_norm(ball_dirX, ball_dirY);
+	vec2_norm(ball.dirX, ball.dirY);
 }
 void update(int value) {
 	keyboard();
@@ -422,9 +398,7 @@ void enable2D(int width, int height) {
 void Reshape(int width, int height) {
 	windW = width;
 	windH = height;
-
 	glViewport(0, 0, windW, windH);
-
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluOrtho2D(-0.5, windW + 0.5, -0.5, windH + 0.5);
@@ -444,7 +418,7 @@ static void Init(void) {
 	angle = 0.0;
 	for (n = 0; n <= MAXANGLES; n++) {
 		sinTable[n] = sin(angle);
-		angle += PI / (MAXANGLES / 2.0);
+		angle += M_PI / (MAXANGLES / 2.0);
 	}
 	leftPaddle.posX = 10;
 	leftPaddle.posY = 50;
@@ -505,9 +479,8 @@ int main(int argc, char** argv) {
 	glutDisplayFunc(draw);
 	glutTimerFunc(interval, update, 0);
 	enable2D(width, height);
-	mciSendString("open src/Z2Pa66C8Y1c.wav alias announce", 0, 0, 0 );
-	mciSendString("play announce", 0, 0, 0 );
-	//PlaySound((LPCSTR) "src/No_Flex_Zone.wav", NULL, SND_FILENAME | SND_NOSTOP | SND_ASYNC);
+	mciSendString("open src/Z2Pa66C8Y1c.wav alias announce", 0, 0, 0);
+	mciSendString("play announce", 0, 0, 0);
 	glutMainLoop();
 	return 0;
 }
