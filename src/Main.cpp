@@ -293,14 +293,13 @@ void draw() {
 		ShowStars();
 
 		glColor4f(.23, .78, .32, 0.41);
-		//drawRect(leftPaddle.posX, leftPaddle.posY, paddleShort, paddleLong);
 		leftPaddle.draw(leftPaddle.posX,leftPaddle.posY,leftPaddle.width,leftPaddle.height);
 		glColor4f(.23, .78, .32, .41);
-		drawRect(rightPaddle.posX, rightPaddle.posY, paddleShort, paddleLong);
+		rightPaddle.draw(rightPaddle.posX,rightPaddle.posY,rightPaddle.width,rightPaddle.height);
 		glColor4f(.23, .78, .32, .41);
-		drawRect(topPaddle.posX, topPaddle.posY, paddleLong, paddleShort);
+		topPaddle.draw(topPaddle.posX,topPaddle.posY,topPaddle.width,topPaddle.height);
 		glColor4f(.23, .78, .32, .41);
-		drawRect(botPaddle.posX, botPaddle.posY, paddleLong, paddleShort);
+		botPaddle.draw(botPaddle.posX,botPaddle.posY,botPaddle.width,botPaddle.height);
 		glColor4f(.23, .78, .32, 0.41);
 
 		drawCircle(ball_posX-ball_size/2,ball_posY-ball_size/2,ball_size);
