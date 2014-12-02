@@ -24,7 +24,7 @@ int interval = 1000 / 60;
 
 int paddleShort = 20;
 int paddleLong = 180;
-int paddle_speed = 8;
+int paddle_speed = 10;
 
 float ball_posX = width / 2;
 float ball_posY = height / 2;
@@ -42,7 +42,7 @@ GLint play = 1;
 
 #define PI 3.141592657
 #define DEG2RAD (M_PI/180.0)
-#define MAXSTARS 400
+#define MAXSTARS 4000
 #define MAXPOS 10000
 #define MAXWARP 10
 #define MAXANGLES 6000
@@ -186,7 +186,7 @@ void ShowStar(GLint n) {
 			y1 += windH / 2.0;
 
 			glLineWidth(MAXPOS / 100.0 / stars[n].z[0] + 1.0);
-			glColor3f(1.0, (MAXWARP - speed) / MAXWARP,
+			glColor3f(1.0, 1,
 					(MAXWARP - speed) / MAXWARP);
 			if (fabs(x0 - x1) < 1.0 && fabs(y0 - y1) < 1.0) {
 				glBegin(GL_POINTS);
@@ -200,7 +200,7 @@ void ShowStar(GLint n) {
 			}
 		} else {
 			width = MAXPOS / 10.0 / stars[n].z[0] + 1.0;
-			glColor3f(1.0, 0.0, 0.0);
+			glColor3f(1.0, 1.0, 0.0);
 			glBegin(GL_POLYGON);
 			for (i = 0; i < 8; i++) {
 				float x = x0 + width * Cos((float) i * MAXANGLES / 8.0);
@@ -231,7 +231,7 @@ void NewStar(GLint n, GLint d) {
 	} else {
 		stars[n].offsetX = 0.0;
 		stars[n].offsetY = 0.0;
-		stars[n].offsetR = 1.0;
+		stars[n].offsetR = 1.2;
 	}
 }
 
@@ -494,21 +494,21 @@ void Visible(int state) {
 }
 
 int main(int argc, char** argv) {
-	//PlaySound((LPCSTR) "src/No_Flex_Zone.wav", NULL, SND_FILENAME | SND_ASYNC | SND_NOSTOP);
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowPosition(50, 0);
 	glutInitWindowSize(width, height);
 	glutCreateWindow("SpaceBox");
-
 	Init();
 	glutReshapeFunc(Reshape);
 	glutVisibilityFunc(Visible);
-
 	glutDisplayFunc(draw);
 	glutTimerFunc(interval, update, 0);
 	enable2D(width, height);
-
+	mciSendString("open src/No_Flex_Zone.wav alias announce", 0, 0, 0 );
+	mciSendString("play announce", 0, 0, 0 );
+	//PlaySound((LPCSTR) "src/No_Flex_Zone.wav", NULL, SND_FILENAME | SND_NOSTOP | SND_ASYNC);
 	glutMainLoop();
 	return 0;
 }
+
