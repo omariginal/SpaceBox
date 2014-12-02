@@ -10,8 +10,8 @@
 Ball::Ball() {
 	posX = 500;
 	posY = 340;
-	dirX = -1;
-	dirY = 0.1;
+	dirX = rand() % 40;
+	dirY = rand() % 10;
 	size = 20;
 	speed = 5;
 }
@@ -24,3 +24,5 @@ void Ball::draw(float x, float y, float radius) {
 	}
 	glEnd();
 }
+
+

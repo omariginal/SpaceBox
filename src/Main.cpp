@@ -24,29 +24,25 @@ int KEY_A = 0x41;
 int KEY_S = 0x53;
 int KEY_D = 0x44;
 
-int width = 1000;
-int height = 680;
+
+//UPdate rate [fps]
 int interval = 1000 / 60;
 
+//Paddle stats
 int paddleShort = 20;
 int paddleLong = 180;
+
 
 Paddle leftPaddle;
 Paddle rightPaddle;
 Paddle topPaddle;
 Paddle botPaddle;
-
 Ball ball;
 
 GLint play = 1;
 
-enum {
-	NORMAL = 0, WEIRD = 1
-};
-
-enum {
-	STREAK = 0, CIRCLE = 1
-};
+GLint STREAK = 0;
+GLint CIRCLE = 1;
 
 typedef struct _starRec {
 	GLint type;
@@ -56,7 +52,6 @@ typedef struct _starRec {
 
 GLenum doubleBuffer;
 GLint windW = 1000, windH = 600;
-GLenum flag = NORMAL;
 GLint starCount = MAXSTARS / 2;
 float speed = 0.2;
 GLint nitro = 1;
@@ -77,16 +72,8 @@ std::string int2str(int x) {
 	return ss.str();
 }
 
-void drawCircle(float x, float y, float radius) {
-	glBegin(GL_LINE_LOOP);
 
-	for (int i = 0; i < 360; i++) {
-		float degInRad = i * DEG2RAD;
-		glVertex2f(cos(degInRad) * radius + x, sin(degInRad) * radius + y);
-	}
 
-	glEnd();
-}
 void keyboard() {
 	// left paddle
 	if (GetAsyncKeyState(VK_UP) && (rightPaddle.posY < 500)) {
@@ -118,9 +105,7 @@ void keyboard() {
 void MoveStars(void) {
 	float offset;
 	GLint n;
-
 	offset = speed * 60.0;
-
 	for (n = 0; n < starCount; n++) {
 		stars[n].x[1] = stars[n].x[0];
 		stars[n].y[1] = stars[n].y[0];
@@ -137,7 +122,6 @@ void MoveStars(void) {
 
 void RotatePoint(float *x, float *y, float rotation) {
 	float tmpX, tmpY;
-
 	tmpX = *x * Cos(rotation) - *y * Sin(rotation);
 	tmpY = *y * Cos(rotation) + *x * Sin(rotation);
 	*x = tmpX;
@@ -161,7 +145,6 @@ void ShowStar(GLint n) {
 			RotatePoint(&x1, &y1, stars[n].rotation);
 			x1 += windW / 2.0;
 			y1 += windH / 2.0;
-
 			glLineWidth(MAXPOS / 100.0 / stars[n].z[0] + 1.0);
 			glColor3f(1.0, 1, (MAXWARP - speed) / MAXWARP);
 			if (fabs(x0 - x1) < 1.0 && fabs(y0 - y1) < 1.0) {
@@ -170,13 +153,14 @@ void ShowStar(GLint n) {
 				glEnd();
 			} else {
 				glBegin(GL_LINES);
+				glColor4f(1.0, 1.0, 0.0,.70);
 				glVertex2f(x0, y0);
 				glVertex2f(x1, y1);
 				glEnd();
 			}
 		} else {
 			width = MAXPOS / 10.0 / stars[n].z[0] + 1.0;
-			glColor3f(1.0, 1.0, 0.0);
+			glColor4f(1.0, 1.0, 0.0,.70);
 			glBegin(GL_POLYGON);
 			for (i = 0; i < 8; i++) {
 				float x = x0 + width * Cos((float) i * MAXANGLES / 8.0);
@@ -200,26 +184,20 @@ void NewStar(GLint n, GLint d) {
 	stars[n].x[1] = stars[n].x[0];
 	stars[n].y[1] = stars[n].y[0];
 	stars[n].z[1] = stars[n].z[0];
-	if (rand() % 4 == 0 && flag == WEIRD) {
-		stars[n].offsetX = (float) (rand() % 100 - 100 / 2);
-		stars[n].offsetY = (float) (rand() % 100 - 100 / 2);
-		stars[n].offsetR = (float) (rand() % 25 - 25 / 2);
-	} else {
-		stars[n].offsetX = 0.0;
-		stars[n].offsetY = 0.0;
-		stars[n].offsetR = 1.2;
-	}
+
+	stars[n].offsetX = ball.posX/100;
+	stars[n].offsetY = ball.posY/100;
+	stars[n].offsetR = 1.2;
 }
+
 
 GLenum StarPoint(GLint n) {
 	float x0, y0;
-
 	x0 = stars[n].x[0] * windW / stars[n].z[0];
 	y0 = stars[n].y[0] * windH / stars[n].z[0];
 	RotatePoint(&x0, &y0, stars[n].rotation);
 	x0 += windW / 2.0;
 	y0 += windH / 2.0;
-
 	if (x0 >= 0.0 && x0 < windW && y0 >= 0.0 && y0 < windH) {
 		return GL_TRUE;
 	} else {
@@ -229,9 +207,7 @@ GLenum StarPoint(GLint n) {
 
 void UpdateStars(void) {
 	GLint n;
-
 	glClear(GL_COLOR_BUFFER_BIT);
-
 	for (n = 0; n < starCount; n++) {
 		if (stars[n].z[0] > speed || (stars[n].z[0] > 0.0 && speed < MAXWARP)) {
 			if (StarPoint(n) == GL_FALSE) {
@@ -245,9 +221,7 @@ void UpdateStars(void) {
 
 void ShowStars(void) {
 	GLint n;
-
 	glClear(GL_COLOR_BUFFER_BIT);
-
 	for (n = 0; n < starCount; n++) {
 		if (stars[n].z[0] > speed || (stars[n].z[0] > 0.0 && speed < MAXWARP)) {
 			ShowStar(n);
@@ -281,6 +255,7 @@ void draw() {
 
 	glutSwapBuffers();
 }
+
 void vec2_norm(float& x, float &y) {
 	float length = sqrt((x * x) + (y * y));
 	if (length != 0.0f) {
@@ -289,6 +264,8 @@ void vec2_norm(float& x, float &y) {
 		y *= length;
 	}
 }
+
+// Testing collisions
 void updateBall() {
 	ball.posX += ball.dirX * ball.speed;
 	ball.posY += ball.dirY * ball.speed;
@@ -337,9 +314,8 @@ void updateBall() {
 	}
 	// hit left wall
 	if (ball.posX < 0) {
-		nitro = 1;
-		ball.posX = width / 2;
-		ball.posY = height / 2;
+		ball.posX = windW / 2;
+		ball.posY = windH / 2;
 		ball.dirX = fabs(ball.dirX);
 		ball.dirY = 0;
 		ball.speed = 5.0;
@@ -348,10 +324,9 @@ void updateBall() {
 	}
 
 	// hit right wall
-	if (ball.posX > width) {
-		nitro = 1;
-		ball.posX = width / 2;
-		ball.posY = height / 2;
+	if (ball.posX > windW) {
+		ball.posX = windW / 2;
+		ball.posY = windH / 2;
 		ball.dirX = -fabs(ball.dirX);
 		ball.dirY = 0;
 		ball.speed = 5.0;
@@ -360,10 +335,9 @@ void updateBall() {
 	}
 
 	// hit top wall
-	if (ball.posY > height) {
-		nitro = 1;
-		ball.posX = width / 2;
-		ball.posY = height / 2;
+	if (ball.posY > windH) {
+		ball.posX = windW / 2;
+		ball.posY = windH / 2;
 		ball.dirX = -fabs(ball.dirX);
 		ball.dirY = 0;
 		ball.speed = 5.0;
@@ -372,9 +346,8 @@ void updateBall() {
 	}
 	// hit bottom wall
 	if (ball.posY < 0) {
-		nitro = 1;
-		ball.posX = width / 2;
-		ball.posY = height / 2;
+		ball.posX = windW / 2;
+		ball.posY = windH / 2;
 		ball.dirX = 0;
 		ball.dirY = fabs(ball.dirY);
 		ball.speed = 5.0;
@@ -383,6 +356,7 @@ void updateBall() {
 	}
 	vec2_norm(ball.dirX, ball.dirY);
 }
+
 void update(int value) {
 	keyboard();
 	updateBall();
@@ -404,62 +378,47 @@ void Reshape(int width, int height) {
 	windH = height;
 	glViewport(0, 0, windW, windH);
 	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(-0.5, windW + 0.5, -0.5, windH + 0.5);
 	glMatrixMode(GL_MODELVIEW);
 }
 
 static void Init(void) {
 	float angle;
 	GLint n;
-
 	srand((unsigned int) time(NULL));
-
 	for (n = 0; n < MAXSTARS; n++) {
 		NewStar(n, 100);
 	}
-
-	angle = 0.0;
+	angle = 23.0;
 	for (n = 0; n <= MAXANGLES; n++) {
 		sinTable[n] = sin(angle);
 		angle += M_PI / (MAXANGLES / 2.0);
 	}
-	leftPaddle.posX = 10;
-	leftPaddle.posY = 50;
-	leftPaddle.width = paddleShort;
-	leftPaddle.height = paddleLong;
-	rightPaddle.posX = width - paddleShort - 10;
-	rightPaddle.posY = 50;
-	rightPaddle.width = paddleShort;
-	rightPaddle.height = paddleLong;
-	botPaddle.posX = 0;
-	botPaddle.posY = 10;
+
+
+
 	botPaddle.width = paddleLong;
 	botPaddle.height = paddleShort;
-	topPaddle.posX = 0;
-	topPaddle.posY = height - paddleShort - 10;
 	topPaddle.width = paddleLong;
 	topPaddle.height = paddleShort;
+	rightPaddle.width = paddleShort;
+	rightPaddle.height = paddleLong;
+	leftPaddle.width = paddleShort;
+	leftPaddle.height = paddleLong;
+	//Start positions of paddles.
+	leftPaddle.posX = 10;
+	leftPaddle.posY = (600-paddleShort)/2;
+	rightPaddle.posX = windW - paddleShort - 10;
+	rightPaddle.posY = (600-paddleShort)/2;
+	botPaddle.posX = (1000-paddleLong)/2;
+	botPaddle.posY = 10;
+
+	topPaddle.posX = (1000-paddleLong)/2;
+	topPaddle.posY = windH - paddleShort - 10;
 }
 
 void Idle(void) {
 	MoveStars();
 	UpdateStars();
-	if (nitro > 0) {
-		speed = (float) (nitro / 10) + 1.0;
-		if (speed > MAXWARP) {
-			speed = MAXWARP;
-		}
-		if (++nitro > MAXWARP * 10) {
-			nitro = -nitro;
-		}
-	} else if (nitro < 0) {
-		nitro++;
-		speed = (float) (-nitro / 10) + 1.0;
-		if (speed > MAXWARP) {
-			speed = MAXWARP;
-		}
-	}
 	glutPostRedisplay();
 }
 
@@ -474,15 +433,15 @@ void Visible(int state) {
 int main(int argc, char** argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutInitWindowPosition(50, 0);
-	glutInitWindowSize(width, height);
+	glutInitWindowPosition(0,0);
+	glutInitWindowSize(windW, windH);
 	glutCreateWindow("SpaceBox");
 	Init();
 	glutReshapeFunc(Reshape);
 	glutVisibilityFunc(Visible);
 	glutDisplayFunc(draw);
 	glutTimerFunc(interval, update, 0);
-	enable2D(width, height);
+	enable2D(windW, windH);
 	mciSendString("open src/Z2Pa66C8Y1c.wav alias announce", 0, 0, 0);
 	mciSendString("play announce", 0, 0, 0);
 	glutMainLoop();
