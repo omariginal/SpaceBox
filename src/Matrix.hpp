@@ -21,6 +21,7 @@ public:
 	void translate(GLfloat x, GLfloat y, GLfloat z);  // translate MC =  T(x, y, z)
 	void rotate(GLfloat x, GLfloat y, GLfloat z, GLfloat angle); //rotate w.r.p.t. vector (x, y, z) by angle
 	void multiply_vector(GLfloat* v); // mat*v
+	void scale(GLfloat x, GLfloat y, GLfloat z);
 	void normalize();  // this function is to normalize MC
 };
 

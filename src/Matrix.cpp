@@ -44,30 +44,79 @@ void Matrix::translate(GLfloat tx, GLfloat ty, GLfloat tz) {
 	this->mat[2][3] += tz;
 	this->mat[3][3] = 1;
 }
+// translate the origin of MC
+void Matrix::scale(GLfloat tx, GLfloat ty, GLfloat tz) {
+	this->mat[0][0] += tx;
+	this->mat[1][1] += ty;
+	this->mat[2][2] += tz;
 
+}
 void Matrix::transpose() {
+	Matrix* temp = new Matrix();
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			temp->mat[i][j] = this->mat[j][i];
+		}
+
+	}
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			this->mat[i][j] = temp->mat[i][j];
+		}
+	}
+	delete temp;
 }
 // normalize MC
 void Matrix::normalize() {
+	GLfloat norm;
+
+	norm = sqrt(this->mat[0][0]*this->mat[0][0] + this->mat[1][0]*this->mat[1][0]+this->mat[2][0]*this->mat[2][0]);
+
+	this->mat[0][0] = this->mat[0][0]/norm;
+	this->mat[1][0] = this->mat[1][0]/norm;
+	this->mat[2][0] = this->mat[2][0]/norm;
+
+	this->mat[0][2] = this->mat[1][0]*this->mat[2][1]-this->mat[2][0]*this->mat[1][1];
+	this->mat[1][2] = this->mat[2][0]*this->mat[0][1]-this->mat[0][0]*this->mat[2][1];
+	this->mat[2][2] = this->mat[0][0]*this->mat[1][1]-this->mat[1][0]*this->mat[0][1];
+
+	norm = sqrt(this->mat[0][2]*this->mat[0][2] + this->mat[1][2]*this->mat[1][2]+this->mat[2][2]*this->mat[2][2]);
+
+	this->mat[0][2] = this->mat[0][2]/norm;
+	this->mat[1][2] = this->mat[1][2]/norm;
+	this->mat[2][2] = this->mat[2][2]/norm;
+
+	this->mat[0][1] = this->mat[1][2]*this->mat[2][0]-this->mat[1][0]*this->mat[2][2];
+	this->mat[1][1] = this->mat[2][2]*this->mat[0][0]-this->mat[2][0]*this->mat[0][2];
+	this->mat[2][1] = this->mat[0][2]*this->mat[1][0]-this->mat[0][0]*this->mat[1][2];
+
+
+	this->mat[3][0] = 0;
+	this->mat[3][1] = 0;
+	this->mat[3][2] = 0;
+	this->mat[3][3] = 1;
+
 }
 
 // v  <- mat * v
-void Matrix::multiply_vector(GLfloat* v) {
-    GLfloat sum,  temp[4];
-    for( int i = 0; i < 4; i++ ) {
-        sum = 0;
-        for( int j = 0; j < 4; j++ ) {
-           sum += v[j] * this->mat[i][j];
-        }
-        temp[i] = sum;
-    }
-    for( int i = 0; i < 4; i++ ) {
-         v[i] = temp[i];
-    }
+void Matrix::multiply_vector(GLfloat* v) {	//wrote this myself
+	GLfloat temp[4];
+	for (int i = 0; i < 4; i++) {
+		GLfloat sum = 0;
+		for (int k = 0; k < 4; k++) {
+			sum += v[k] * this->mat[i][k];
+		}
+		temp[i] = sum;
+
+	}
+	for (int i = 0; i < 4; i++) {
+		v[i] = temp[i];
+	}
+
 }
 
-// MC <= rotation matrix * MC, i.e., rotate cordinate vectors and the origin 
-void Matrix::rotate(GLfloat x, GLfloat y, GLfloat z, GLfloat angle) {
+// MC <= rotation matrix * MC, i.e., rotate cordinate vectors and the origin
+void Matrix::rotate(GLfloat x, GLfloat y, GLfloat z, GLfloat angle) { // Hongbing's code for rotate matrix
 	angle = angle * 3.1415926 / 180;
 	float oneC = 1 - cos(angle);
 	float COS = cos(angle);
@@ -79,25 +128,20 @@ void Matrix::rotate(GLfloat x, GLfloat y, GLfloat z, GLfloat angle) {
 	m->mat[0][1] = y * x * oneC + z * sin(angle);
 	m->mat[0][2] = x * z * oneC - y * SIN;
 	m->mat[0][3] = 0;
-
 	m->mat[1][0] = x * y * oneC - z * SIN;
 	m->mat[1][1] = y * y * oneC + COS;
 	m->mat[1][2] = y * z * oneC + x * SIN;
 	m->mat[1][3] = 0;
-
 	m->mat[2][0] = x * z * oneC + y * SIN;
 	m->mat[2][1] = y * z * oneC - x * SIN;
 	m->mat[2][2] = z * z * oneC + COS;
 	m->mat[2][3] = 0;
-
 	m->mat[3][0] = 0;
 	m->mat[3][1] = 0;
 	m->mat[3][2] = 0;
 	m->mat[3][3] = 1;
 
 	this->matrix_pre_multiply(m);
-
 	delete m;
-
 }
 

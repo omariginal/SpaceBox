@@ -17,6 +17,7 @@ Matrix Shape::getMC() {
 
 void Shape::translate(GLfloat tx, GLfloat ty, GLfloat tz) {
 	MC.translate(tx, ty, tz);
+
 }
 
 void Shape::rotate(GLfloat rx, GLfloat ry, GLfloat rz, GLfloat angle) {
@@ -24,17 +25,16 @@ void Shape::rotate(GLfloat rx, GLfloat ry, GLfloat rz, GLfloat angle) {
 }
 
 void Shape::rotate_mc(GLfloat rx, GLfloat ry, GLfloat rz, GLfloat angle) {
-// you need to implement this method
-
 	GLfloat x0, y0, z0;
 
-	x0 = MC.mat[0][3];
-	y0 = MC.mat[1][3];
-	z0 = MC.mat[2][3];
-	MC.rotate(rx, ry, rz, angle);
-	MC.mat[0][3] = x0;
-	MC.mat[1][3] = y0;
-	MC.mat[2][3] = z0;
+		x0 = MC.mat[0][3];
+		y0 = MC.mat[1][3];
+		z0 = MC.mat[2][3];
+		MC.rotate(rx, ry, rz, angle);
+		MC.mat[0][3] = x0;
+		MC.mat[1][3] = y0;
+		MC.mat[2][3] = z0;
+
 
 }
 
@@ -53,7 +53,6 @@ void Shape::rotate_origin(GLfloat rx, GLfloat ry, GLfloat rz, GLfloat angle) {
 	MC.mat[3][3] = v[3];
 	delete m;
 }
-
 
 void Shape::rotate_relative(GLfloat x0, GLfloat y0, GLfloat z0, GLfloat rx, GLfloat ry, GLfloat rz, GLfloat angle) {
 	Matrix* m = new Matrix();
@@ -74,8 +73,6 @@ void Shape::rotate_relative(GLfloat x0, GLfloat y0, GLfloat z0, GLfloat rx, GLfl
 	delete m;
 
 }
-
-
 
 void Shape::scale_change(GLfloat x) {
 	s += x;

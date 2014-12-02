@@ -21,18 +21,16 @@ using namespace std;
  * Shape class the common class that will be inherited model object class
  */
 class Shape {
-protected:
+
 
 
 public:
 	Matrix MC; //the Model coordinate system in (X, Y, Z, 0)
 	GLfloat s; // scale factor
-
 	Shape();  // constructor
 	virtual ~Shape();  // destructor
 
 	Matrix getMC();
-
 	void ctm_multiply(); // function to do the CTM * MC
 	// to change the scale factor
 	void scale_change(GLfloat x);
@@ -44,8 +42,9 @@ public:
 	void rotate(GLfloat rx, GLfloat ry, GLfloat rz, GLfloat angle);
 	// to rotate the origin of MC and keep the vector changed
 	void rotate_origin(GLfloat rx, GLfloat ry, GLfloat rz, GLfloat angle);
-	// draw function must be overwritten
+	//to rotate a shape relative to something else
 	void rotate_relative(GLfloat x0, GLfloat y0, GLfloat z0, GLfloat rx, GLfloat ry, GLfloat rz, GLfloat angle);
+	// draw function must be overwritten
 	virtual void draw() = 0;
 };
 
