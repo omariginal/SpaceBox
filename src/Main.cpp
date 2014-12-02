@@ -9,7 +9,6 @@
 #include <gl\glu.h>
 #include <time.h>
 #include "GL/freeglut.h"
-#include "World.hpp"
 #include <mmsystem.h>
 #include "Paddle.hpp"
 #include "ball.hpp"

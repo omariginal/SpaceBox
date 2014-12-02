@@ -16,11 +16,14 @@ Paddle::Paddle(/*float X, float Y, float Width, float Height*/) {
 }
 
 void Paddle::draw(float x, float y, float width, float height) {
-	glColor4f(.23, .78, .32, .41);
 	glBegin(GL_QUADS);
+	glColor4f(0,1,1,.4);
 	glVertex2f(x, y);
+	glColor4f(0,0,1,.4);
 	glVertex2f(x + width, y);
+	glColor4f(1,0,1,.6);
 	glVertex2f(x + width, y + height);
+	glColor4f(1,1,1,.6);
 	glVertex2f(x, y + height);
 	glEnd();
 }
